@@ -1,6 +1,7 @@
 import numpy as np
 import cv2
 import tensorflow as tf
+import time
 
 import utils
 
@@ -10,12 +11,14 @@ cap = cv2.VideoCapture('./video/cars-highway.mp4')
 
 count_going = 0
 count_coming = 0
+
+prev_frame_time = 0
+new_frame_time = 0
 while True:
     success, img = cap.read()
-    pure_img = img.copy()
     if success == 0:
         break
-    
+    pure_img = img.copy()
     
     height, width, c = img.shape
     
@@ -41,9 +44,16 @@ while True:
     img = utils.draw_bbs_on_detection(img, dt_boxes, dt_classes, dt_scores, {1: 'Car'})
     ############################################################
 
+    # Calculating the fps
+    new_frame_time = time.time()
+    fps = 1/(new_frame_time-prev_frame_time)
+    prev_frame_time = new_frame_time
+  
+    fps = int(fps)
+    cv2.putText(img, f'{fps} fps', (10, 30), 4, 1, (0, 0, 255), 2)
     cv2.imshow('', img)
         
-    if cv2.waitKey(100) & 0xff == ord('q'):
+    if cv2.waitKey(1) & 0xff == ord('q'):
         break
     
 cv2.destroyAllWindows()
